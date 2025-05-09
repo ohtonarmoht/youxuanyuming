@@ -67,5 +67,10 @@ https://github.com/jc-lw/youxuanyuming
 本项目由 VTEXS 的「开源项目免费 VPS 计划」提供算力支持。
 感谢 VTEXS 对开源社区的支持！
 
+注意修改时间的参数 别太频繁了 4小时就很不错
+
+自己修改了beatdomain文件里面的内容 加了测试响应 质量会更高些
+
+
 
 
