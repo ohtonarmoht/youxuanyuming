@@ -2,7 +2,7 @@ import os
 import requests
 
 def get_ip_list(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=5)  # 设置5秒超时
     response.raise_for_status()
     return response.text.strip().split('\n')
 
@@ -11,7 +11,7 @@ def get_cloudflare_zone(api_token):
         'Authorization': f'Bearer {api_token}',
         'Content-Type': 'application/json',
     }
-    response = requests.get('https://api.cloudflare.com/client/v4/zones', headers=headers)
+    response = requests.get('https://api.cloudflare.com/client/v4/zones', headers=headers, timeout=5)  # 设置5秒超时
     response.raise_for_status()
     zones = response.json().get('result', [])
     if not zones:
@@ -25,13 +25,13 @@ def delete_existing_dns_records(api_token, zone_id, subdomain, domain):
     }
     record_name = domain if subdomain == '@' else f'{subdomain}.{domain}'
     while True:
-        response = requests.get(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?type=A&name={record_name}', headers=headers)
+        response = requests.get(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?type=A&name={record_name}', headers=headers, timeout=5)  # 设置5秒超时
         response.raise_for_status()
         records = response.json().get('result', [])
         if not records:
             break
         for record in records:
-            delete_response = requests.delete(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record["id"]}', headers=headers)
+            delete_response = requests.delete(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record["id"]}', headers=headers, timeout=5)  # 设置5秒超时
             delete_response.raise_for_status()
             print(f"Del {subdomain}:{record['id']}")
 
@@ -49,7 +49,7 @@ def update_cloudflare_dns(ip_list, api_token, zone_id, subdomain, domain):
             "ttl": 1,
             "proxied": False
         }
-        response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records', json=data, headers=headers)
+        response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records', json=data, headers=headers, timeout=5)  # 设置5秒超时
         if response.status_code == 200:
             print(f"Add {subdomain}:{ip}")
         else:
