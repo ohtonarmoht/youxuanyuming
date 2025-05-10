@@ -25,39 +25,11 @@ jobs:
         pip install socket
         
     - name: Run script
-      run: |
-        python ${{ github.workspace }}/collect_ips.py
+      run: python ${{ github.workspace }}/collect_ips.py
         
     - name: Remove duplicates and unavailable IPs
       run: |
-        python -c "
-import socket
-
-# 读取 IP 列表
-with open('${{ github.workspace }}/ip.txt', 'r') as f:
-    ip_list = f.readlines()
-
-# 去除重复的 IP 地址
-ip_list = list(set(ip.strip() for ip in ip_list))
-
-# 验证每个 IP 是否可以连接 443 端口（HTTPS）
-valid_ips = []
-
-def check_ip(ip):
-    try:
-        socket.create_connection((ip, 443), timeout=5)
-        return ip
-    except socket.error:
-        return None
-
-# 筛选有效 IP
-valid_ips = [ip for ip in ip_list if check_ip(ip)]
-
-# 保存有效 IP 列表
-with open('${{ github.workspace }}/ip.txt', 'w') as f:
-    for ip in valid_ips:
-        f.write(f'{ip}\n')
-"
+        python -c "import socket; ip_list = open('${{ github.workspace }}/ip.txt').read().splitlines(); ip_list = list(set(ip_list)); valid_ips = [ip for ip in ip_list if (lambda ip: socket.create_connection((ip, 443), timeout=5) is None)(ip) is None]; open('${{ github.workspace }}/ip.txt', 'w').writelines('\n'.join(valid_ips))"
 
     - name: Commit and push changes
       run: |
