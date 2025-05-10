@@ -73,6 +73,8 @@ https://github.com/jc-lw/youxuanyuming
 
 iplist ipcaiji 这两个是一个东西 除了运行时间别瞎改了 bug多
 
+创建了remove_invalid_ips.py和remove_invalid_ips.yml 去不可用的ip
+
 
 
 
