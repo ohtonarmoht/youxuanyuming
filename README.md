@@ -69,9 +69,15 @@ https://github.com/jc-lw/youxuanyuming
 
 其实修改完项目要求改的部分也基本上够用了
 
-就是得自己删除caijiip.yml 重新创建caijiip.yml后运行一下 好像这样ip.txt才会更新内容
+不想继续折腾就修改完要求的部分就行了
+
+记得就是得自己删除caijiip.yml 重新创建caijiip.yml后运行一下 好像这样ip.txt才会更新内容
 
 要不然你运行完ip.txt的内容不会更新
+
+看情况来就行 如果更新了 就不用删除来了 看情况
+
+不折腾版本到这里可以了
 
 下面是自己根据gpt修改或者添加的内容
 
