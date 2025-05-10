@@ -75,13 +75,15 @@ fork完修改完时间以及需要修改的部分后 进行下面的操作
 
 一个py需要一个yml yml就是工作流文件
 
-自己修改了beatdomain文件里面的内容 加了测试响应 质量会更高些
+自己修改了bestdomain文件里面的内容 加了测试响应 质量会更高些
 
 caijiip.yml Update IP List 这两个是一组对应的东西 除了运行时间别瞎改了 bug多
 
 记得fork后先改时间 运行成功后再删除caijiip.yml 重新创建caijiip.yml后运行一下 好像这样ip.txt才会更新内容
 
-创建了remove_invalid_ips.py和remove_invalid_ips.yml 去不可用的ip
+创建了remove_invalid_ips.py和remove_invalid_ips.yml 去不可用去重复的ip
+
+有这两个后(remove_invalid_ips.py和remove_invalid_ips.yml)其实不需要动bestdomain了 因为已经有需要的效果了
 
 第一个在首页创建 第二个在工作流的页面创建
 
