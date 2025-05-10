@@ -1,17 +1,30 @@
 import os
 import requests
+import socket
 
 def get_ip_list(url):
-    response = requests.get(url, timeout=5)  # 设置5秒超时
+    response = requests.get(url)
     response.raise_for_status()
-    return response.text.strip().split('\n')
+    raw_ips = response.text.strip().split('\n')
+    ip_list = list(set(ip.strip() for ip in raw_ips if ip.strip()))
+    return ip_list
+
+def test_ip_port(ip, port=443, timeout=5):
+    try:
+        with socket.create_connection((ip, port), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+def filter_usable_ips(ip_list, port=443):
+    return [ip for ip in ip_list if test_ip_port(ip, port)]
 
 def get_cloudflare_zone(api_token):
     headers = {
         'Authorization': f'Bearer {api_token}',
         'Content-Type': 'application/json',
     }
-    response = requests.get('https://api.cloudflare.com/client/v4/zones', headers=headers, timeout=5)  # 设置5秒超时
+    response = requests.get('https://api.cloudflare.com/client/v4/zones', headers=headers)
     response.raise_for_status()
     zones = response.json().get('result', [])
     if not zones:
@@ -25,15 +38,15 @@ def delete_existing_dns_records(api_token, zone_id, subdomain, domain):
     }
     record_name = domain if subdomain == '@' else f'{subdomain}.{domain}'
     while True:
-        response = requests.get(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?type=A&name={record_name}', headers=headers, timeout=5)  # 设置5秒超时
+        response = requests.get(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?type=A&name={record_name}', headers=headers)
         response.raise_for_status()
         records = response.json().get('result', [])
         if not records:
             break
         for record in records:
-            delete_response = requests.delete(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record["id"]}', headers=headers, timeout=5)  # 设置5秒超时
+            delete_response = requests.delete(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record["id"]}', headers=headers)
             delete_response.raise_for_status()
-            print(f"Del {subdomain}:{record['id']}")
+            print(f"删除记录 {subdomain}: {record['id']}")
 
 def update_cloudflare_dns(ip_list, api_token, zone_id, subdomain, domain):
     headers = {
@@ -49,32 +62,29 @@ def update_cloudflare_dns(ip_list, api_token, zone_id, subdomain, domain):
             "ttl": 1,
             "proxied": False
         }
-        response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records', json=data, headers=headers, timeout=5)  # 设置5秒超时
+        response = requests.post(f'https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records', json=data, headers=headers)
         if response.status_code == 200:
-            print(f"Add {subdomain}:{ip}")
+            print(f"添加记录 {subdomain}: {ip}")
         else:
-            print(f"Failed to add A record for IP {ip} to subdomain {subdomain}: {response.status_code} {response.text}")
+            print(f"添加失败 {ip} 到 {subdomain}: {response.status_code} {response.text}")
 
 if __name__ == "__main__":
     api_token = os.getenv('CF_API_TOKEN')
     
-    # 示例URL和子域名对应的IP列表
     subdomain_ip_mapping = {
-        'bestcf': 'https://raw.githubusercontent.com/ohtonarmoht/youxuanyuming/refs/heads/main/ip.txt', #域名二，api.域名.com
-        # 添加更多子域名和对应的IP列表URL
+        'bestcf': 'https://raw.githubusercontent.com/ohtonarmoht/youxuanyuming/refs/heads/main/ip_raw.txt',  # 你的原始 IP 列表
     }
     
     try:
-        # 获取Cloudflare域区ID和域名
         zone_id, domain = get_cloudflare_zone(api_token)
         
         for subdomain, url in subdomain_ip_mapping.items():
-            # 获取IP列表
-            ip_list = get_ip_list(url)
-            # 删除现有的DNS记录
+            raw_ips = get_ip_list(url)
+            print(f"获取到 {len(raw_ips)} 个原始 IP，正在测试可用性...")
+            usable_ips = filter_usable_ips(raw_ips)
+            print(f"通过测试的 IP 有 {len(usable_ips)} 个，开始更新 DNS")
             delete_existing_dns_records(api_token, zone_id, subdomain, domain)
-            # 更新Cloudflare DNS记录
-            update_cloudflare_dns(ip_list, api_token, zone_id, subdomain, domain)
-            
+            update_cloudflare_dns(usable_ips, api_token, zone_id, subdomain, domain)
+
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"发生错误: {e}")
