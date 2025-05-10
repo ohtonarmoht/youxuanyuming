@@ -4,10 +4,8 @@ on:
   schedule:
     - cron: '0 */4 * * *'  # 每四小时运行一次
   workflow_dispatch:  # 手动触发
-  # push: # 允许提交触发
 
 jobs:
-
   update-ip-list:
     runs-on: ubuntu-latest
     
@@ -25,7 +23,7 @@ jobs:
         pip install requests
         pip install beautifulsoup4
         pip install socket
-    
+        
     - name: Run script
       run: |
         python ${{ github.workspace }}/collect_ips.py
@@ -44,13 +42,17 @@ ip_list = list(set(ip.strip() for ip in ip_list))
 
 # 验证每个 IP 是否可以连接 443 端口（HTTPS）
 valid_ips = []
-for ip in ip_list:
+
+def check_ip(ip):
     try:
         socket.create_connection((ip, 443), timeout=5)
-        valid_ips.append(ip)
+        return ip
     except socket.error:
-        print(f'IP {ip} cannot be reached on port 443')
-        
+        return None
+
+# 筛选有效 IP
+valid_ips = [ip for ip in ip_list if check_ip(ip)]
+
 # 保存有效 IP 列表
 with open('${{ github.workspace }}/ip.txt', 'w') as f:
     for ip in valid_ips:
