@@ -23,31 +23,16 @@ jobs:
         pip install requests
         pip install beautifulsoup4
         
-    - name: Run script
-      run: |
-        echo "Running collect_ips.py script..."
-        python ${{ github.workspace }}/collect_ips.py
-        
+    - name: Run script to collect IPs
+      run: python ${{ github.workspace }}/collect_ips.py
+
     - name: Remove duplicates and unavailable IPs
       run: |
         echo "Removing duplicates and testing IP availability..."
-        python -c '
-import socket
-ip_list = open("${{ github.workspace }}/ip.txt").read().splitlines()
-ip_list = list(set(ip_list))
-valid_ips = []
-for ip in ip_list:
-    try:
-        socket.create_connection((ip, 443), timeout=5)
-        valid_ips.append(ip)
-    except Exception as e:
-        print(f"Error for IP {ip}: {e}")
-open("${{ github.workspace }}/ip.txt", "w").writelines("\n".join(valid_ips))
-        '
+        python ${{ github.workspace }}/remove_invalid_ips.py
         
     - name: Commit and push changes
       run: |
-        echo "Committing and pushing changes..."
         git config --global user.email "ohtonarmoht@gmail.com"
         git config --global user.name "ohtonarmoht"
         if [ -n "$(git status --porcelain)" ]; then
