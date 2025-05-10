@@ -31,9 +31,9 @@ jobs:
     - name: Remove duplicates and unavailable IPs
       run: |
         echo "Removing duplicates and testing IP availability..."
-        python -c "
+        python -c '
 import socket
-ip_list = open('${{ github.workspace }}/ip.txt').read().splitlines()
+ip_list = open("${{ github.workspace }}/ip.txt").read().splitlines()
 ip_list = list(set(ip_list))
 valid_ips = []
 for ip in ip_list:
@@ -41,9 +41,9 @@ for ip in ip_list:
         socket.create_connection((ip, 443), timeout=5)
         valid_ips.append(ip)
     except Exception as e:
-        print(f'Error for IP {ip}: {e}')
-open('${{ github.workspace }}/ip.txt', 'w').writelines('\n'.join(valid_ips))
-"
+        print(f"Error for IP {ip}: {e}")
+open("${{ github.workspace }}/ip.txt", "w").writelines("\n".join(valid_ips))
+        '
         
     - name: Commit and push changes
       run: |
