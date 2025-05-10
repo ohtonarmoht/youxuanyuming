@@ -71,9 +71,13 @@ https://github.com/jc-lw/youxuanyuming
 
 自己修改了beatdomain文件里面的内容 加了测试响应 质量会更高些
 
-iplist ipcaiji 这两个是一个东西 除了运行时间别瞎改了 bug多
+caijiip.yml Update IP List 这两个是一组对应的东西 除了运行时间别瞎改了 bug多
+
+记得fork后先改时间 运行成功后再删除caijiip.yml 重新创建caijiip.yml后运行一下 好像这样ip.txt才会更新内容
 
 创建了remove_invalid_ips.py和remove_invalid_ips.yml 去不可用的ip
+
+第一个在首页创建 第二个在工作流的页面创建
 
 
 
